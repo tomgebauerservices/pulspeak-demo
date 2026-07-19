@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PulsPeak · Shop-Cockpit</title>
+<style>
+:root {
+  --surface:#fcfcfb; --page:#f9f9f7; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10);
+  --s1:#2a78d6; --s2:#1baf7a; --neg:#e34948;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --up:#006300; --down:#b3261e;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --surface:#1a1a19; --page:#0d0d0d; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
+  --s1:#3987e5; --s2:#199e70; --neg:#e66767; --up:#0ca30c; --down:#e66767;
+} }
+* { box-sizing:border-box; margin:0 }
+body { background:var(--page); color:var(--ink); font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+       padding:24px; max-width:1060px; margin:0 auto }
+header h1 { font-size:22px } header p { color:var(--ink2); font-size:13px; margin-top:4px }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:10px;
+        padding:16px 18px; margin-top:16px }
+figure.card { margin:16px 0 0 }
+figcaption { font-size:13px; color:var(--ink2); margin-bottom:10px }
+figcaption strong { color:var(--ink); font-size:14px }
+.tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:16px }
+.tile { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px }
+.tlabel { font-size:12px; color:var(--ink2) }
+.tvalue { font-size:26px; font-weight:650; margin:4px 0 2px }
+.tsub { font-size:12px; color:var(--muted) }
+.delta { font-size:13px; font-weight:600; vertical-align:3px }
+.delta.good { color:var(--up) } .delta.bad { color:var(--down) } .delta.neutral { color:var(--muted) }
+svg { width:100%; height:auto; display:block }
+.grid { stroke:var(--grid); stroke-width:1 } .axis { stroke:var(--axis); stroke-width:1 }
+.tick { fill:var(--muted); font-size:11px; font-variant-numeric:tabular-nums }
+.line { fill:none; stroke-width:2; stroke-linejoin:round }
+.line.s1 { stroke:var(--s1) } .line.s2 { stroke:var(--s2) }
+.dlabel { font-size:12px; font-weight:600 } .s1t { fill:var(--s1) } .s2t { fill:var(--s2) }
+.bar.pos { fill:var(--s1) } .bar.neg { fill:var(--neg) }
+.bar:hover { opacity:.85 }
+.blabel { fill:var(--ink2); font-size:12px }
+.bvalue { fill:var(--ink2); font-size:12px; font-variant-numeric:tabular-nums }
+.bvalue.negt { fill:var(--neg); font-weight:600 }
+.legend { display:flex; gap:18px; font-size:12px; color:var(--ink2); margin-top:8px }
+.dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px }
+.s1bg { background:var(--s1) } .s2bg { background:var(--s2) }
+.crosshair { stroke:var(--axis); stroke-width:1; stroke-dasharray:3 3 }
+.chartwrap { position:relative }
+.tooltip { position:absolute; pointer-events:none; background:var(--surface); border:1px solid var(--border);
+  border-radius:8px; padding:8px 10px; font-size:12px; box-shadow:0 4px 14px rgba(0,0,0,.12);
+  white-space:nowrap; z-index:5 }
+.alert { display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-top:1px solid var(--grid); font-size:14px }
+.alert:first-of-type { border-top:none }
+.adetail { color:var(--ink2); font-size:13px }
+.badge { font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px; color:#fff; flex-shrink:0; margin-top:2px }
+.b-good { background:var(--good) } .b-warning { background:var(--warning); color:#0b0b0b }
+.b-serious { background:var(--serious); color:#0b0b0b } .b-critical { background:var(--critical) }
+table { width:100%; border-collapse:collapse; font-size:13px }
+th { text-align:left; color:var(--ink2); font-weight:600; padding:6px 8px; border-bottom:1px solid var(--axis) }
+td { padding:6px 8px; border-bottom:1px solid var(--grid); font-variant-numeric:tabular-nums }
+td.tneg { color:var(--neg); font-weight:600 }
+footer { margin:22px 0 6px; font-size:12px; color:var(--muted); text-align:center }
+</style></head><body>
+<header>
+  <h1>PulsPeak — Shop-Cockpit</h1>
+  <p>Automatisch aktualisiert am 19.07.2026 um 22:16 Uhr · Demo mit fiktiven Daten · Zeitraum: letzte 30 Tage vs. Vormonat</p>
+</header>
+<div class="tiles"><div class="tile"><div class="tlabel">Umsatz (30 Tage)</div><div class="tvalue">31.401 € <span class="delta bad">▼ 14,9 %</span></div><div class="tsub">461 Bestellungen · Ø 68 € pro Korb</div></div><div class="tile"><div class="tlabel">Deckungsbeitrag</div><div class="tvalue">45,0 % <span class="delta good">▲ 1,3 pp</span></div><div class="tsub">14.141 € absolut</div></div><div class="tile"><div class="tlabel">ROAS</div><div class="tvalue">7,6 <span class="delta bad">▼ 0,5</span></div><div class="tsub">über Break-even (2,2) · Werbung 4.146 €</div></div><div class="tile"><div class="tlabel">Retourenquote</div><div class="tvalue">11,8 % <span class="delta bad">▲ 4,3 pp</span></div><div class="tsub">Conversion 2,3 % · CAC 15 €</div></div></div>
+<div class="card"><figcaption><strong>Ampel</strong> · automatische Prüfregeln</figcaption><div class="alert serious"><span class="badge b-serious">! Handeln</span><div><strong>Fitness-Tracker PP-One verbrennt Geld</strong><br><span class="adetail">-852 € nach Werbekosten in 30 Tagen (Umsatz 5.340 €, Werbung 1.411 €, Retouren 34 %). Werbebudget prüfen oder Preis anheben.</span></div></div><div class="alert warning"><span class="badge b-warning">▲ Beobachten</span><div><strong>Retourenquote steigt</strong><br><span class="adetail">11,8 % (+4,3 Prozentpunkte vs. Vormonat). Häufigste Ursachen: Größentabelle, Produktfotos, Werbeversprechen.</span></div></div></div>
+
+<figure class="card">
+  <figcaption><strong>Umsatz &amp; Deckungsbeitrag</strong> · letzte 90 Tage, 7-Tage-Schnitt</figcaption>
+  <div class="chartwrap" id="lc-wrap">
+  <svg id="linechart" viewBox="0 0 960 300" role="img" aria-label="Liniendiagramm Umsatz und Deckungsbeitrag">
+    <line class="grid" x1="62" x2="810" y1="241.3" y2="241.3"/><text class="tick" x="54" y="245.3" text-anchor="end">500 €</text><line class="grid" x1="62" x2="810" y1="140.0" y2="140.0"/><text class="tick" x="54" y="144.0" text-anchor="end">1.000 €</text><line class="grid" x1="62" x2="810" y1="38.7" y2="38.7"/><text class="tick" x="54" y="42.7" text-anchor="end">1.500 €</text><text class="tick" x="62.0" y="292" text-anchor="middle">20.04.</text><text class="tick" x="213.3" y="292" text-anchor="middle">08.05.</text><text class="tick" x="364.6" y="292" text-anchor="middle">26.05.</text><text class="tick" x="507.4" y="292" text-anchor="middle">12.06.</text><text class="tick" x="658.7" y="292" text-anchor="middle">30.06.</text><text class="tick" x="810.0" y="292" text-anchor="middle">18.07.</text>
+    <line class="axis" x1="62" x2="810" y1="270" y2="270"/>
+    <path class="line s1" d="M62.0,102.2L70.4,114.8L78.8,100.2L87.2,101.1L95.6,75.0L104.0,53.8L112.4,34.5L120.8,46.7L129.2,41.8L137.6,37.5L146.0,39.7L154.4,46.2L162.9,71.2L171.3,95.7L179.7,76.0L188.1,68.8L196.5,93.6L204.9,99.2L213.3,116.1L221.7,124.1L230.1,100.2L238.5,90.9L246.9,97.7L255.3,83.6L263.7,88.3L272.1,99.3L280.5,89.8L288.9,102.5L297.3,140.1L305.7,137.4L314.1,115.9L322.5,106.4L330.9,94.4L339.3,111.3L347.8,124.5L356.2,110.5L364.6,101.3L373.0,114.9L381.4,122.2L389.8,130.7L398.2,129.9L406.6,120.2L415.0,95.9L423.4,102.9L431.8,110.4L440.2,105.3L448.6,94.7L457.0,78.4L465.4,62.9L473.8,67.3L482.2,74.6L490.6,68.3L499.0,75.0L507.4,77.2L515.8,84.5L524.2,113.1L532.7,129.1L541.1,117.6L549.5,108.8L557.9,82.8L566.3,77.8L574.7,70.2L583.1,68.9L591.5,84.1L599.9,99.0L608.3,90.5L616.7,120.4L625.1,121.9L633.5,129.8L641.9,139.5L650.3,138.6L658.7,137.5L667.1,159.9L675.5,151.4L683.9,157.7L692.3,157.5L700.7,120.1L709.1,87.8L717.6,86.8L726.0,103.1L734.4,114.1L742.8,110.9L751.2,108.5L759.6,112.5L768.0,136.9L776.4,131.2L784.8,119.4L793.2,109.1L801.6,126.4L810.0,137.5"/>
+    <path class="line s2" d="M62.0,236.8L70.4,240.3L78.8,231.8L87.2,230.6L95.6,219.5L104.0,210.3L112.4,202.3L120.8,208.8L129.2,208.2L137.6,207.3L146.0,212.1L154.4,215.5L162.9,225.3L171.3,235.3L179.7,228.7L188.1,223.8L196.5,234.5L204.9,233.4L213.3,240.0L221.7,243.1L230.1,230.3L238.5,221.5L246.9,226.0L255.3,221.8L263.7,226.1L272.1,231.5L280.5,226.9L288.9,233.5L297.3,251.7L305.7,248.8L314.1,239.2L322.5,232.6L330.9,230.9L339.3,237.9L347.8,245.3L356.2,240.1L364.6,237.7L373.0,242.2L381.4,248.9L389.8,248.8L398.2,249.3L406.6,242.8L415.0,234.4L423.4,238.5L431.8,240.9L440.2,235.5L448.6,232.6L457.0,227.4L465.4,227.1L473.8,226.4L482.2,227.2L490.6,225.3L499.0,230.1L507.4,228.6L515.8,229.0L524.2,235.8L532.7,243.2L541.1,240.7L549.5,238.5L557.9,225.2L566.3,226.5L574.7,224.1L583.1,223.6L591.5,228.3L599.9,235.3L608.3,230.6L616.7,246.0L625.1,244.1L633.5,248.0L641.9,252.8L650.3,257.0L658.7,255.5L667.1,263.7L675.5,258.1L683.9,261.8L692.3,263.4L700.7,244.3L709.1,227.4L717.6,227.8L726.0,235.3L734.4,239.3L742.8,237.6L751.2,233.3L759.6,238.6L768.0,248.8L776.4,244.7L784.8,239.1L793.2,234.9L801.6,241.4L810.0,246.9"/>
+    <text class="dlabel s1t" x="820" y="141.5">Umsatz</text><text class="dlabel s2t" x="820" y="250.9">Deckungsbeitrag</text>
+    <line id="crosshair" class="crosshair" y1="16" y2="270" x1="-10" x2="-10"/>
+  </svg>
+  <div class="tooltip" id="lc-tip" hidden></div>
+  </div>
+  <div class="legend">
+    <span><i class="dot s1bg"></i>Umsatz (netto)</span>
+    <span><i class="dot s2bg"></i>Deckungsbeitrag</span>
+  </div>
+  <script>window.LC_DATA = [{'d': '20.04.', 'r': 1186, 'c': 522, 'x': 62.0}, {'d': '21.04.', 'r': 1124, 'c': 505, 'x': 70.4}, {'d': '22.04.', 'r': 1196, 'c': 547, 'x': 78.8}, {'d': '23.04.', 'r': 1192, 'c': 553, 'x': 87.2}, {'d': '24.04.', 'r': 1321, 'c': 607, 'x': 95.6}, {'d': '25.04.', 'r': 1425, 'c': 653, 'x': 104.0}, {'d': '26.04.', 'r': 1521, 'c': 692, 'x': 112.4}, {'d': '27.04.', 'r': 1460, 'c': 660, 'x': 120.8}, {'d': '28.04.', 'r': 1485, 'c': 663, 'x': 129.2}, {'d': '29.04.', 'r': 1506, 'c': 668, 'x': 137.6}, {'d': '30.04.', 'r': 1495, 'c': 644, 'x': 146.0}, {'d': '01.05.', 'r': 1463, 'c': 627, 'x': 154.4}, {'d': '02.05.', 'r': 1339, 'c': 579, 'x': 162.9}, {'d': '03.05.', 'r': 1218, 'c': 529, 'x': 171.3}, {'d': '04.05.', 'r': 1316, 'c': 562, 'x': 179.7}, {'d': '05.05.', 'r': 1351, 'c': 586, 'x': 188.1}, {'d': '06.05.', 'r': 1229, 'c': 534, 'x': 196.5}, {'d': '07.05.', 'r': 1201, 'c': 539, 'x': 204.9}, {'d': '08.05.', 'r': 1118, 'c': 506, 'x': 213.3}, {'d': '09.05.', 'r': 1078, 'c': 491, 'x': 221.7}, {'d': '10.05.', 'r': 1196, 'c': 554, 'x': 230.1}, {'d': '11.05.', 'r': 1242, 'c': 597, 'x': 238.5}, {'d': '12.05.', 'r': 1209, 'c': 575, 'x': 246.9}, {'d': '13.05.', 'r': 1278, 'c': 596, 'x': 255.3}, {'d': '14.05.', 'r': 1255, 'c': 575, 'x': 263.7}, {'d': '15.05.', 'r': 1201, 'c': 548, 'x': 272.1}, {'d': '16.05.', 'r': 1248, 'c': 571, 'x': 280.5}, {'d': '17.05.', 'r': 1185, 'c': 538, 'x': 288.9}, {'d': '18.05.', 'r': 1000, 'c': 449, 'x': 297.3}, {'d': '19.05.', 'r': 1013, 'c': 463, 'x': 305.7}, {'d': '20.05.', 'r': 1119, 'c': 510, 'x': 314.1}, {'d': '21.05.', 'r': 1166, 'c': 543, 'x': 322.5}, {'d': '22.05.', 'r': 1225, 'c': 551, 'x': 330.9}, {'d': '23.05.', 'r': 1141, 'c': 517, 'x': 339.3}, {'d': '24.05.', 'r': 1077, 'c': 480, 'x': 347.8}, {'d': '25.05.', 'r': 1145, 'c': 506, 'x': 356.2}, {'d': '26.05.', 'r': 1191, 'c': 518, 'x': 364.6}, {'d': '27.05.', 'r': 1124, 'c': 495, 'x': 373.0}, {'d': '28.05.', 'r': 1088, 'c': 462, 'x': 381.4}, {'d': '29.05.', 'r': 1046, 'c': 463, 'x': 389.8}, {'d': '30.05.', 'r': 1050, 'c': 460, 'x': 398.2}, {'d': '31.05.', 'r': 1097, 'c': 492, 'x': 406.6}, {'d': '01.06.', 'r': 1217, 'c': 534, 'x': 415.0}, {'d': '02.06.', 'r': 1183, 'c': 514, 'x': 423.4}, {'d': '03.06.', 'r': 1146, 'c': 502, 'x': 431.8}, {'d': '04.06.', 'r': 1171, 'c': 529, 'x': 440.2}, {'d': '05.06.', 'r': 1223, 'c': 543, 'x': 448.6}, {'d': '06.06.', 'r': 1304, 'c': 569, 'x': 457.0}, {'d': '07.06.', 'r': 1380, 'c': 570, 'x': 465.4}, {'d': '08.06.', 'r': 1359, 'c': 573, 'x': 473.8}, {'d': '09.06.', 'r': 1323, 'c': 569, 'x': 482.2}, {'d': '10.06.', 'r': 1354, 'c': 579, 'x': 490.6}, {'d': '11.06.', 'r': 1321, 'c': 555, 'x': 499.0}, {'d': '12.06.', 'r': 1310, 'c': 562, 'x': 507.4}, {'d': '13.06.', 'r': 1274, 'c': 561, 'x': 515.8}, {'d': '14.06.', 'r': 1133, 'c': 527, 'x': 524.2}, {'d': '15.06.', 'r': 1054, 'c': 490, 'x': 532.7}, {'d': '16.06.', 'r': 1110, 'c': 503, 'x': 541.1}, {'d': '17.06.', 'r': 1154, 'c': 513, 'x': 549.5}, {'d': '18.06.', 'r': 1282, 'c': 579, 'x': 557.9}, {'d': '19.06.', 'r': 1307, 'c': 573, 'x': 566.3}, {'d': '20.06.', 'r': 1344, 'c': 585, 'x': 574.7}, {'d': '21.06.', 'r': 1351, 'c': 587, 'x': 583.1}, {'d': '22.06.', 'r': 1276, 'c': 564, 'x': 591.5}, {'d': '23.06.', 'r': 1202, 'c': 529, 'x': 599.9}, {'d': '24.06.', 'r': 1244, 'c': 553, 'x': 608.3}, {'d': '25.06.', 'r': 1097, 'c': 477, 'x': 616.7}, {'d': '26.06.', 'r': 1089, 'c': 486, 'x': 625.1}, {'d': '27.06.', 'r': 1050, 'c': 467, 'x': 633.5}, {'d': '28.06.', 'r': 1003, 'c': 443, 'x': 641.9}, {'d': '29.06.', 'r': 1007, 'c': 422, 'x': 650.3}, {'d': '30.06.', 'r': 1012, 'c': 430, 'x': 658.7}, {'d': '01.07.', 'r': 901, 'c': 389, 'x': 667.1}, {'d': '02.07.', 'r': 944, 'c': 417, 'x': 675.5}, {'d': '03.07.', 'r': 912, 'c': 399, 'x': 683.9}, {'d': '04.07.', 'r': 913, 'c': 391, 'x': 692.3}, {'d': '05.07.', 'r': 1098, 'c': 485, 'x': 700.7}, {'d': '06.07.', 'r': 1258, 'c': 568, 'x': 709.1}, {'d': '07.07.', 'r': 1263, 'c': 567, 'x': 717.6}, {'d': '08.07.', 'r': 1182, 'c': 529, 'x': 726.0}, {'d': '09.07.', 'r': 1127, 'c': 510, 'x': 734.4}, {'d': '10.07.', 'r': 1144, 'c': 518, 'x': 742.8}, {'d': '11.07.', 'r': 1155, 'c': 539, 'x': 751.2}, {'d': '12.07.', 'r': 1136, 'c': 513, 'x': 759.6}, {'d': '13.07.', 'r': 1015, 'c': 463, 'x': 768.0}, {'d': '14.07.', 'r': 1043, 'c': 483, 'x': 776.4}, {'d': '15.07.', 'r': 1101, 'c': 511, 'x': 784.8}, {'d': '16.07.', 'r': 1152, 'c': 531, 'x': 793.2}, {'d': '17.07.', 'r': 1067, 'c': 499, 'x': 801.6}, {'d': '18.07.', 'r': 1012, 'c': 472, 'x': 810.0}];</script>
+</figure>
+
+<figure class="card">
+  <figcaption><strong>Ergebnis pro Produkt nach Werbekosten</strong> · letzte 30 Tage — die Zahl, die kein Shop-System zeigt</figcaption>
+  <div class="chartwrap">
+  <svg viewBox="0 0 960 370" role="img" aria-label="Balkendiagramm Deckungsbeitrag nach Werbekosten pro Produkt">
+    <line class="axis" x1="397.9" x2="397.9" y1="6" y2="358"/>
+    <text class="blabel" x="240" y="27" text-anchor="end">Widerstandsbänder-Set Pro</text><path class="bar pos" d="M397.9,12 L846.0,12 Q850.0,12 850.0,16 L850.0,32 Q850.0,36 846.0,36 L397.9,36 Z" data-tip="Widerstandsbänder-Set Pro: 2.604 € nach Werbung · Umsatz 4.921 € · Werbung 441 € · Retouren 6,6 %"/><text class="bvalue " x="858.0" y="27" text-anchor="start">2.604 €</text><text class="blabel" x="240" y="61" text-anchor="end">Yogamatte EcoGrip</text><path class="bar pos" d="M397.9,46 L716.1,46 Q720.1,46 720.1,50 L720.1,66 Q720.1,70 716.1,70 L397.9,70 Z" data-tip="Yogamatte EcoGrip: 1.856 € nach Werbung · Umsatz 4.110 € · Werbung 397 € · Retouren 9,6 %"/><text class="bvalue " x="728.1" y="61" text-anchor="start">1.856 €</text><text class="blabel" x="240" y="95" text-anchor="end">Hanteln-Set verstellbar 24 kg</text><path class="bar pos" d="M397.9,80 L668.7,80 Q672.7,80 672.7,84 L672.7,100 Q672.7,104 668.7,104 L397.9,104 Z" data-tip="Hanteln-Set verstellbar 24 kg: 1.583 € nach Werbung · Umsatz 5.215 € · Werbung 529 € · Retouren 14,6 %"/><text class="bvalue " x="680.7" y="95" text-anchor="start">1.583 €</text><text class="blabel" x="240" y="129" text-anchor="end">Kettlebell 16 kg</text><path class="bar pos" d="M397.9,114 L591.8,114 Q595.8,114 595.8,118 L595.8,134 Q595.8,138 591.8,138 L397.9,138 Z" data-tip="Kettlebell 16 kg: 1.140 € nach Werbung · Umsatz 3.194 € · Werbung 265 € · Retouren 1,5 %"/><text class="bvalue " x="603.8" y="129" text-anchor="start">1.140 €</text><text class="blabel" x="240" y="163" text-anchor="end">Trinkflasche Thermo 1L</text><path class="bar pos" d="M397.9,148 L561.5,148 Q565.5,148 565.5,152 L565.5,168 Q565.5,172 561.5,172 L397.9,172 Z" data-tip="Trinkflasche Thermo 1L: 966 € nach Werbung · Umsatz 1.992 € · Werbung 176 € · Retouren 2,4 %"/><text class="bvalue " x="573.5" y="163" text-anchor="start">966 €</text><text class="blabel" x="240" y="197" text-anchor="end">Faszienrolle Duo</text><path class="bar pos" d="M397.9,182 L557.2,182 Q561.2,182 561.2,186 L561.2,202 Q561.2,206 557.2,206 L397.9,206 Z" data-tip="Faszienrolle Duo: 941 € nach Werbung · Umsatz 2.153 € · Werbung 221 € · Retouren 7,7 %"/><text class="bvalue " x="569.2" y="197" text-anchor="start">941 €</text><text class="blabel" x="240" y="231" text-anchor="end">Springseil Speed Elite</text><path class="bar pos" d="M397.9,216 L509.2,216 Q513.2,216 513.2,220 L513.2,236 Q513.2,240 509.2,240 L397.9,240 Z" data-tip="Springseil Speed Elite: 664 € nach Werbung · Umsatz 1.532 € · Werbung 221 € · Retouren 8,3 %"/><text class="bvalue " x="521.2" y="231" text-anchor="start">664 €</text><text class="blabel" x="240" y="265" text-anchor="end">Trainingshandschuhe Grip+</text><path class="bar pos" d="M397.9,250 L505.4,250 Q509.4,250 509.4,254 L509.4,270 Q509.4,274 505.4,274 L397.9,274 Z" data-tip="Trainingshandschuhe Grip+: 642 € nach Werbung · Umsatz 1.718 € · Werbung 265 € · Retouren 21,1 %"/><text class="bvalue " x="517.4" y="265" text-anchor="start">642 €</text><text class="blabel" x="240" y="299" text-anchor="end">Laufgürtel HydraBelt</text><path class="bar pos" d="M397.9,284 L472.1,284 Q476.1,284 476.1,288 L476.1,304 Q476.1,308 472.1,308 L397.9,308 Z" data-tip="Laufgürtel HydraBelt: 450 € nach Werbung · Umsatz 1.228 € · Werbung 221 € · Retouren 12,0 %"/><text class="bvalue " x="484.1" y="299" text-anchor="start">450 €</text><text class="blabel" x="240" y="333" text-anchor="end">Fitness-Tracker PP-One</text><path class="bar neg" d="M397.9,318 L254.0,318 Q250.0,318 250.0,322 L250.0,338 Q250.0,342 254.0,342 L397.9,342 Z" data-tip="Fitness-Tracker PP-One: -852 € nach Werbung · Umsatz 5.340 € · Werbung 1.411 € · Retouren 34,1 %"/><text class="bvalue negt" x="405.9" y="333" text-anchor="start">-852 €</text>
+  </svg>
+  <div class="tooltip" id="bc-tip" hidden></div>
+  </div>
+</figure>
+
+<div class="card"><figcaption><strong>Alle Produkte</strong> · letzte 30 Tage (Tabellen-Ansicht)</figcaption>
+<table><thead><tr><th>Produkt</th><th>Stück</th><th>Umsatz</th><th>Deckungsbeitrag</th>
+<th>Werbung</th><th>nach Werbung</th><th>Retouren</th></tr></thead><tbody><tr><td>Widerstandsbänder-Set Pro</td><td>151</td><td>4.921 €</td><td>3.046 €</td><td>441 €</td><td class="">2.604 €</td><td>6,6 %</td></tr><tr><td>Yogamatte EcoGrip</td><td>114</td><td>4.110 €</td><td>2.253 €</td><td>397 €</td><td class="">1.856 €</td><td>9,6 %</td></tr><tr><td>Hanteln-Set verstellbar 24 kg</td><td>41</td><td>5.215 €</td><td>2.112 €</td><td>529 €</td><td class="">1.583 €</td><td>14,6 %</td></tr><tr><td>Kettlebell 16 kg</td><td>65</td><td>3.194 €</td><td>1.405 €</td><td>265 €</td><td class="">1.140 €</td><td>1,5 %</td></tr><tr><td>Trinkflasche Thermo 1L</td><td>82</td><td>1.992 €</td><td>1.142 €</td><td>176 €</td><td class="">966 €</td><td>2,4 %</td></tr><tr><td>Faszienrolle Duo</td><td>78</td><td>2.153 €</td><td>1.161 €</td><td>221 €</td><td class="">941 €</td><td>7,7 %</td></tr><tr><td>Springseil Speed Elite</td><td>84</td><td>1.532 €</td><td>885 €</td><td>221 €</td><td class="">664 €</td><td>8,3 %</td></tr><tr><td>Trainingshandschuhe Grip+</td><td>95</td><td>1.718 €</td><td>907 €</td><td>265 €</td><td class="">642 €</td><td>21,1 %</td></tr><tr><td>Laufgürtel HydraBelt</td><td>50</td><td>1.228 €</td><td>671 €</td><td>221 €</td><td class="">450 €</td><td>12,0 %</td></tr><tr><td>Fitness-Tracker PP-One</td><td>91</td><td>5.340 €</td><td>559 €</td><td>1.411 €</td><td class="tneg">-852 €</td><td>34,1 %</td></tr></tbody></table></div>
+<footer>Reporting-Autopilot · richtet sich ein, aktualisiert sich täglich, meldet Auffälligkeiten — ohne dass du dich kümmerst.</footer>
+<script>
+(function() {
+  // Linien-Tooltip mit Fadenkreuz
+  const wrap = document.getElementById('lc-wrap'), svg = document.getElementById('linechart'),
+        tip = document.getElementById('lc-tip'), ch = document.getElementById('crosshair');
+  if (svg && window.LC_DATA) {
+    svg.addEventListener('mousemove', e => {
+      const r = svg.getBoundingClientRect(), sx = 960 / r.width, mx = (e.clientX - r.left) * sx;
+      let best = 0, bd = 1e9;
+      LC_DATA.forEach((p, i) => { const d = Math.abs(p.x - mx); if (d < bd) { bd = d; best = i; } });
+      const p = LC_DATA[best];
+      ch.setAttribute('x1', p.x); ch.setAttribute('x2', p.x);
+      tip.hidden = false;
+      tip.innerHTML = '<strong>' + p.d + '</strong> · Ø 7 Tage<br>Umsatz: ' + p.r.toLocaleString('de-DE') +
+                      ' €<br>Deckungsbeitrag: ' + p.c.toLocaleString('de-DE') + ' €';
+      const wr = wrap.getBoundingClientRect();
+      tip.style.left = Math.min(e.clientX - wr.left + 14, wr.width - 190) + 'px';
+      tip.style.top = (e.clientY - wr.top + 14) + 'px';
+    });
+    svg.addEventListener('mouseleave', () => { tip.hidden = true; ch.setAttribute('x1', -10); ch.setAttribute('x2', -10); });
+  }
+  // Balken-Tooltip
+  document.querySelectorAll('.bar').forEach(b => {
+    b.addEventListener('mousemove', e => {
+      const tip2 = document.getElementById('bc-tip'), wr = b.closest('.chartwrap').getBoundingClientRect();
+      tip2.hidden = false; tip2.textContent = b.dataset.tip;
+      tip2.style.left = Math.min(e.clientX - wr.left + 14, wr.width - 320) + 'px';
+      tip2.style.top = (e.clientY - wr.top + 14) + 'px';
+    });
+    b.addEventListener('mouseleave', () => document.getElementById('bc-tip').hidden = true);
+  });
+})();
+</script>
+</body></html>
