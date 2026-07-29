@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PulsPeak · Shop Cockpit</title>
+<style>
+:root {
+  --surface:#fcfcfb; --page:#f9f9f7; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10);
+  --s1:#2dd4a7; --s2:#2a78d6; --neg:#e34948;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --up:#006300; --down:#b3261e;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --surface:#1a1a19; --page:#0d0d0d; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
+  --s1:#2dd4a7; --s2:#3987e5; --neg:#e66767; --up:#0ca30c; --down:#e66767;
+} }
+* { box-sizing:border-box; margin:0 }
+body { background:var(--page); color:var(--ink); font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+       padding:24px; max-width:1060px; margin:0 auto }
+header h1 { font-size:22px } header p { color:var(--ink2); font-size:13px; margin-top:4px }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:10px;
+        padding:16px 18px; margin-top:16px }
+figure.card { margin:16px 0 0 }
+figcaption { font-size:13px; color:var(--ink2); margin-bottom:10px }
+figcaption strong { color:var(--ink); font-size:14px }
+.tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:16px }
+.tile { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px }
+.tlabel { font-size:12px; color:var(--ink2) }
+.tvalue { font-size:26px; font-weight:650; margin:4px 0 2px }
+.tsub { font-size:12px; color:var(--muted) }
+.card.profit { border-color:var(--s1) }
+.pvalue { font-size:30px; font-weight:700; margin:2px 0 10px; font-variant-numeric:tabular-nums }
+.pvalue.pos { color:var(--up) } .pvalue.neg { color:var(--neg) }
+.pnl { width:100%; max-width:460px; border-collapse:collapse; font-size:14px }
+.pnl td { padding:6px 2px; border-bottom:1px solid var(--grid) }
+.pnl td:last-child { text-align:right; font-variant-numeric:tabular-nums; color:var(--ink2) }
+.delta { font-size:13px; font-weight:600; vertical-align:3px }
+.delta.good { color:var(--up) } .delta.bad { color:var(--down) } .delta.neutral { color:var(--muted) }
+svg { width:100%; height:auto; display:block }
+.grid { stroke:var(--grid); stroke-width:1 } .axis { stroke:var(--axis); stroke-width:1 }
+.tick { fill:var(--muted); font-size:11px; font-variant-numeric:tabular-nums }
+.line { fill:none; stroke-width:2; stroke-linejoin:round }
+.line.s1 { stroke:var(--s1) } .line.s2 { stroke:var(--s2) }
+.dlabel { font-size:12px; font-weight:600 } .s1t { fill:var(--s1) } .s2t { fill:var(--s2) }
+.bar.pos { fill:var(--s1) } .bar.neg { fill:var(--neg) }
+.bar:hover { opacity:.85 }
+.blabel { fill:var(--ink2); font-size:12px }
+.bvalue { fill:var(--ink2); font-size:12px; font-variant-numeric:tabular-nums }
+.bvalue.negt { fill:var(--neg); font-weight:600 }
+.legend { display:flex; gap:18px; font-size:12px; color:var(--ink2); margin-top:8px }
+.dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px }
+.s1bg { background:var(--s1) } .s2bg { background:var(--s2) }
+.crosshair { stroke:var(--axis); stroke-width:1; stroke-dasharray:3 3 }
+.chartwrap { position:relative }
+.tooltip { position:absolute; pointer-events:none; background:var(--surface); border:1px solid var(--border);
+  border-radius:8px; padding:8px 10px; font-size:12px; box-shadow:0 4px 14px rgba(0,0,0,.12);
+  white-space:nowrap; z-index:5 }
+.alert { display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-top:1px solid var(--grid); font-size:14px }
+.alert:first-of-type { border-top:none }
+.adetail { color:var(--ink2); font-size:13px }
+.badge { font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px; color:#fff; flex-shrink:0; margin-top:2px }
+.b-good { background:var(--good) } .b-warning { background:var(--warning); color:#0b0b0b }
+.b-serious { background:var(--serious); color:#0b0b0b } .b-critical { background:var(--critical) }
+table { width:100%; border-collapse:collapse; font-size:13px }
+th { text-align:left; color:var(--ink2); font-weight:600; padding:6px 8px; border-bottom:1px solid var(--axis) }
+td { padding:6px 8px; border-bottom:1px solid var(--grid); font-variant-numeric:tabular-nums }
+td.tneg { color:var(--neg); font-weight:600 }
+footer { margin:22px 0 6px; font-size:12px; color:var(--muted); text-align:center }
+</style></head><body>
+<header>
+  <h1>PulsPeak — Shop Cockpit</h1>
+  <p>Automatically updated on Jul 29, 2026 at 08:47 · Demo with fictional data · Period: last 30 days vs. previous month</p>
+</header>
+<div class="tiles"><div class="tile"><div class="tlabel">Revenue (30 days)</div><div class="tvalue">€35,426 <span class="delta bad">▼ 5.9%</span></div><div class="tsub">505 orders · avg €70 per cart</div></div><div class="tile"><div class="tlabel">Contribution margin</div><div class="tvalue">43.9% <span class="delta bad">▼ 0.3 pp</span></div><div class="tsub">€15,544 absolute</div></div><div class="tile"><div class="tlabel">ROAS</div><div class="tvalue">8.7 <span class="delta good">▲ 0.2</span></div><div class="tsub">above break-even (2.3) · ad spend €4,095</div></div><div class="tile"><div class="tlabel">Return rate</div><div class="tvalue">12.3% <span class="delta bad">▲ 5.7 pp</span></div><div class="tsub">Conversion 2.5% · CAC €13</div></div></div>
+<div class="card profit"><figcaption><strong>Profit (after owner's pay)</strong> · last 30 days — what's really left at the end</figcaption><div class="pvalue pos">€4,048</div><table class="pnl"><tr><td>Contribution (after goods, shipping, fees)</td><td>€15,544</td></tr><tr><td>− Ad spend</td><td>−€4,095</td></tr><tr><td>− Fixed costs (rent, software, wages)</td><td>−€3,900</td></tr><tr><td>− Owner's pay (imputed)</td><td>−€3,500</td></tr></table><p class="tsub">Fixed costs &amp; imputed owner's pay are provided by the store — realistically estimated for this demo. This is how the cockpit honestly shows what's left after paying yourself fairly, instead of just celebrating revenue.</p></div>
+<div class="card"><figcaption><strong>Status</strong> · automated checks</figcaption><div class="alert serious"><span class="badge b-serious">! Act</span><div><strong>Fitness-Tracker PP-One is burning money</strong><br><span class="adetail">-€795 after ad costs over 30 days (revenue €6,586, ads €1,394, returns 41%). Cut the ad budget or raise the price.</span></div></div><div class="alert warning"><span class="badge b-warning">▲ Watch</span><div><strong>Return rate rising</strong><br><span class="adetail">12.3% (+5.7 pp vs. last month). Most common causes: sizing chart, product photos, ad promises.</span></div></div></div>
+
+<figure class="card">
+  <figcaption><strong>Revenue &amp; contribution</strong> · last 90 days, 7-day average</figcaption>
+  <div class="chartwrap" id="lc-wrap">
+  <svg id="linechart" viewBox="0 0 960 300" role="img" aria-label="Line chart of revenue and contribution">
+    <line class="grid" x1="62" x2="810" y1="240.8" y2="240.8"/><text class="tick" x="54" y="244.8" text-anchor="end">€500</text><line class="grid" x1="62" x2="810" y1="145.9" y2="145.9"/><text class="tick" x="54" y="149.9" text-anchor="end">€1,000</text><line class="grid" x1="62" x2="810" y1="51.1" y2="51.1"/><text class="tick" x="54" y="55.1" text-anchor="end">€1,500</text><text class="tick" x="62.0" y="292" text-anchor="middle">04/30</text><text class="tick" x="213.3" y="292" text-anchor="middle">05/18</text><text class="tick" x="364.6" y="292" text-anchor="middle">06/05</text><text class="tick" x="507.4" y="292" text-anchor="middle">06/22</text><text class="tick" x="658.7" y="292" text-anchor="middle">07/10</text><text class="tick" x="810.0" y="292" text-anchor="middle">07/28</text>
+    <line class="axis" x1="62" x2="810" y1="270" y2="270"/>
+    <path class="line s1" d="M62.0,57.1L70.4,91.2L78.8,82.9L87.2,89.9L95.6,63.2L104.0,41.9L112.4,33.5L120.8,83.3L129.2,66.1L137.6,59.0L146.0,35.1L154.4,40.1L162.9,61.0L171.3,74.8L179.7,39.0L188.1,52.1L196.5,72.7L204.9,96.0L213.3,117.7L221.7,104.7L230.1,79.6L238.5,95.1L246.9,87.9L255.3,79.9L263.7,66.2L272.1,57.8L280.5,63.2L288.9,71.8L297.3,47.1L305.7,37.8L314.1,45.6L322.5,40.5L330.9,34.2L339.3,48.6L347.8,62.7L356.2,88.5L364.6,87.9L373.0,73.9L381.4,100.8L389.8,113.7L398.2,122.9L406.6,114.1L415.0,110.7L423.4,114.0L431.8,95.8L440.2,89.0L448.6,81.5L457.0,66.9L465.4,60.0L473.8,52.7L482.2,62.8L490.6,81.5L499.0,87.5L507.4,92.6L515.8,96.8L524.2,105.4L532.7,115.9L541.1,109.6L549.5,115.8L557.9,115.1L566.3,97.0L574.7,66.6L583.1,75.4L591.5,78.7L599.9,80.3L608.3,76.7L616.7,88.3L625.1,89.6L633.5,96.1L641.9,107.3L650.3,109.5L658.7,112.1L667.1,115.0L675.5,99.3L683.9,115.6L692.3,144.0L700.7,133.9L709.1,129.2L717.6,141.4L726.0,133.3L734.4,133.1L742.8,125.7L751.2,118.0L759.6,116.3L768.0,123.2L776.4,118.8L784.8,124.5L793.2,123.7L801.6,123.4L810.0,136.9"/>
+    <path class="line s2" d="M62.0,218.9L70.4,228.6L78.8,222.6L87.2,223.8L95.6,212.4L104.0,204.0L112.4,199.9L120.8,220.8L129.2,215.1L137.6,211.9L146.0,203.6L154.4,210.1L162.9,217.4L171.3,223.2L179.7,208.2L188.1,212.7L196.5,223.5L204.9,235.6L213.3,239.8L221.7,234.5L230.1,225.2L238.5,230.8L246.9,228.5L255.3,222.0L263.7,215.9L272.1,214.4L280.5,214.1L288.9,214.4L297.3,205.1L305.7,200.4L314.1,206.1L322.5,203.1L330.9,198.4L339.3,205.7L347.8,216.5L356.2,226.0L364.6,226.0L373.0,219.8L381.4,231.9L389.8,238.4L398.2,243.2L406.6,236.0L415.0,235.4L423.4,238.2L431.8,230.6L440.2,224.9L448.6,223.7L457.0,218.5L465.4,219.6L473.8,216.5L482.2,218.3L490.6,226.6L499.0,231.2L507.4,232.7L515.8,232.6L524.2,232.5L532.7,236.8L541.1,234.3L549.5,237.4L557.9,233.7L566.3,227.2L574.7,213.9L583.1,220.8L591.5,220.7L599.9,221.9L608.3,219.9L616.7,226.4L625.1,222.5L633.5,227.2L641.9,231.3L650.3,234.0L658.7,234.5L667.1,235.3L675.5,229.5L683.9,240.2L692.3,252.0L700.7,245.6L709.1,246.3L717.6,252.0L726.0,251.0L734.4,252.5L742.8,249.4L751.2,248.4L759.6,249.7L768.0,249.5L776.4,248.1L784.8,247.2L793.2,242.5L801.6,240.6L810.0,242.7"/>
+    <text class="dlabel s1t" x="820" y="140.9">Revenue</text><text class="dlabel s2t" x="820" y="246.7">Contribution</text>
+    <line id="crosshair" class="crosshair" y1="16" y2="270" x1="-10" x2="-10"/>
+  </svg>
+  <div class="tooltip" id="lc-tip" hidden></div>
+  </div>
+  <div class="legend">
+    <span><i class="dot s1bg"></i>Revenue (net)</span>
+    <span><i class="dot s2bg"></i>Contribution</span>
+  </div>
+  <script>window.LC_DATA = [{'d': '04/30', 'r': 1468, 'c': 616, 'x': 62.0}, {'d': '05/01', 'r': 1288, 'c': 564, 'x': 70.4}, {'d': '05/02', 'r': 1332, 'c': 596, 'x': 78.8}, {'d': '05/03', 'r': 1295, 'c': 590, 'x': 87.2}, {'d': '05/04', 'r': 1436, 'c': 650, 'x': 95.6}, {'d': '05/05', 'r': 1548, 'c': 694, 'x': 104.0}, {'d': '05/06', 'r': 1592, 'c': 716, 'x': 112.4}, {'d': '05/07', 'r': 1330, 'c': 605, 'x': 120.8}, {'d': '05/08', 'r': 1421, 'c': 635, 'x': 129.2}, {'d': '05/09', 'r': 1458, 'c': 652, 'x': 137.6}, {'d': '05/10', 'r': 1584, 'c': 696, 'x': 146.0}, {'d': '05/11', 'r': 1558, 'c': 662, 'x': 154.4}, {'d': '05/12', 'r': 1447, 'c': 623, 'x': 162.9}, {'d': '05/13', 'r': 1375, 'c': 593, 'x': 171.3}, {'d': '05/14', 'r': 1564, 'c': 672, 'x': 179.7}, {'d': '05/15', 'r': 1495, 'c': 648, 'x': 188.1}, {'d': '05/16', 'r': 1386, 'c': 591, 'x': 196.5}, {'d': '05/17', 'r': 1263, 'c': 528, 'x': 204.9}, {'d': '05/18', 'r': 1149, 'c': 505, 'x': 213.3}, {'d': '05/19', 'r': 1218, 'c': 533, 'x': 221.7}, {'d': '05/20', 'r': 1350, 'c': 582, 'x': 230.1}, {'d': '05/21', 'r': 1268, 'c': 553, 'x': 238.5}, {'d': '05/22', 'r': 1306, 'c': 565, 'x': 246.9}, {'d': '05/23', 'r': 1348, 'c': 599, 'x': 255.3}, {'d': '05/24', 'r': 1420, 'c': 631, 'x': 263.7}, {'d': '05/25', 'r': 1464, 'c': 639, 'x': 272.1}, {'d': '05/26', 'r': 1436, 'c': 641, 'x': 280.5}, {'d': '05/27', 'r': 1390, 'c': 639, 'x': 288.9}, {'d': '05/28', 'r': 1521, 'c': 688, 'x': 297.3}, {'d': '05/29', 'r': 1570, 'c': 713, 'x': 305.7}, {'d': '05/30', 'r': 1529, 'c': 683, 'x': 314.1}, {'d': '05/31', 'r': 1556, 'c': 699, 'x': 322.5}, {'d': '06/01', 'r': 1589, 'c': 724, 'x': 330.9}, {'d': '06/02', 'r': 1513, 'c': 685, 'x': 339.3}, {'d': '06/03', 'r': 1439, 'c': 628, 'x': 347.8}, {'d': '06/04', 'r': 1303, 'c': 578, 'x': 356.2}, {'d': '06/05', 'r': 1306, 'c': 578, 'x': 364.6}, {'d': '06/06', 'r': 1379, 'c': 611, 'x': 373.0}, {'d': '06/07', 'r': 1238, 'c': 547, 'x': 381.4}, {'d': '06/08', 'r': 1170, 'c': 513, 'x': 389.8}, {'d': '06/09', 'r': 1122, 'c': 487, 'x': 398.2}, {'d': '06/10', 'r': 1168, 'c': 526, 'x': 406.6}, {'d': '06/11', 'r': 1186, 'c': 528, 'x': 415.0}, {'d': '06/12', 'r': 1168, 'c': 514, 'x': 423.4}, {'d': '06/13', 'r': 1264, 'c': 554, 'x': 431.8}, {'d': '06/14', 'r': 1300, 'c': 584, 'x': 440.2}, {'d': '06/15', 'r': 1340, 'c': 590, 'x': 448.6}, {'d': '06/16', 'r': 1417, 'c': 617, 'x': 457.0}, {'d': '06/17', 'r': 1453, 'c': 612, 'x': 465.4}, {'d': '06/18', 'r': 1491, 'c': 628, 'x': 473.8}, {'d': '06/19', 'r': 1438, 'c': 619, 'x': 482.2}, {'d': '06/20', 'r': 1340, 'c': 575, 'x': 490.6}, {'d': '06/21', 'r': 1308, 'c': 551, 'x': 499.0}, {'d': '06/22', 'r': 1281, 'c': 543, 'x': 507.4}, {'d': '06/23', 'r': 1259, 'c': 543, 'x': 515.8}, {'d': '06/24', 'r': 1213, 'c': 544, 'x': 524.2}, {'d': '06/25', 'r': 1158, 'c': 521, 'x': 532.7}, {'d': '06/26', 'r': 1191, 'c': 534, 'x': 541.1}, {'d': '06/27', 'r': 1159, 'c': 518, 'x': 549.5}, {'d': '06/28', 'r': 1163, 'c': 538, 'x': 557.9}, {'d': '06/29', 'r': 1258, 'c': 572, 'x': 566.3}, {'d': '06/30', 'r': 1418, 'c': 642, 'x': 574.7}, {'d': '07/01', 'r': 1372, 'c': 605, 'x': 583.1}, {'d': '07/02', 'r': 1354, 'c': 606, 'x': 591.5}, {'d': '07/03', 'r': 1346, 'c': 600, 'x': 599.9}, {'d': '07/04', 'r': 1365, 'c': 610, 'x': 608.3}, {'d': '07/05', 'r': 1304, 'c': 576, 'x': 616.7}, {'d': '07/06', 'r': 1297, 'c': 596, 'x': 625.1}, {'d': '07/07', 'r': 1263, 'c': 572, 'x': 633.5}, {'d': '07/08', 'r': 1203, 'c': 550, 'x': 641.9}, {'d': '07/09', 'r': 1192, 'c': 536, 'x': 650.3}, {'d': '07/10', 'r': 1179, 'c': 533, 'x': 658.7}, {'d': '07/11', 'r': 1163, 'c': 529, 'x': 667.1}, {'d': '07/12', 'r': 1246, 'c': 560, 'x': 675.5}, {'d': '07/13', 'r': 1160, 'c': 503, 'x': 683.9}, {'d': '07/14', 'r': 1010, 'c': 441, 'x': 692.3}, {'d': '07/15', 'r': 1063, 'c': 475, 'x': 700.7}, {'d': '07/16', 'r': 1088, 'c': 471, 'x': 709.1}, {'d': '07/17', 'r': 1024, 'c': 441, 'x': 717.6}, {'d': '07/18', 'r': 1067, 'c': 446, 'x': 726.0}, {'d': '07/19', 'r': 1067, 'c': 439, 'x': 734.4}, {'d': '07/20', 'r': 1107, 'c': 455, 'x': 742.8}, {'d': '07/21', 'r': 1147, 'c': 460, 'x': 751.2}, {'d': '07/22', 'r': 1156, 'c': 453, 'x': 759.6}, {'d': '07/23', 'r': 1120, 'c': 454, 'x': 768.0}, {'d': '07/24', 'r': 1143, 'c': 461, 'x': 776.4}, {'d': '07/25', 'r': 1113, 'c': 466, 'x': 784.8}, {'d': '07/26', 'r': 1117, 'c': 491, 'x': 793.2}, {'d': '07/27', 'r': 1119, 'c': 501, 'x': 801.6}, {'d': '07/28', 'r': 1048, 'c': 490, 'x': 810.0}];</script>
+</figure>
+
+<figure class="card">
+  <figcaption><strong>Result per product after ad costs</strong> · last 30 days — the number no store system shows</figcaption>
+  <div class="chartwrap">
+  <svg viewBox="0 0 960 370" role="img" aria-label="Bar chart of contribution after ad costs per product">
+    <line class="axis" x1="384.7" x2="384.7" y1="6" y2="358"/>
+    <text class="blabel" x="240" y="27" text-anchor="end">Widerstandsbänder-Set Pro</text><path class="bar pos" d="M384.7,12 L846.0,12 Q850.0,12 850.0,16 L850.0,32 Q850.0,36 846.0,36 L384.7,36 Z" data-tip="Widerstandsbänder-Set Pro: €2,748 after ads · revenue €5,130 · ads €436 · returns 5.8%"/><text class="bvalue " x="858.0" y="27" text-anchor="start">€2,748</text><text class="blabel" x="240" y="61" text-anchor="end">Hanteln-Set verstellbar 24 kg</text><path class="bar pos" d="M384.7,46 L762.0,46 Q766.0,46 766.0,50 L766.0,66 Q766.0,70 762.0,70 L384.7,70 Z" data-tip="Hanteln-Set verstellbar 24 kg: €2,252 after ads · revenue €6,854 · ads €523 · returns 14.8%"/><text class="bvalue " x="774.0" y="61" text-anchor="start">€2,252</text><text class="blabel" x="240" y="95" text-anchor="end">Yogamatte EcoGrip</text><path class="bar pos" d="M384.7,80 L697.5,80 Q701.5,80 701.5,84 L701.5,100 Q701.5,104 697.5,104 L384.7,104 Z" data-tip="Yogamatte EcoGrip: €1,871 after ads · revenue €4,150 · ads €392 · returns 11.1%"/><text class="bvalue " x="709.5" y="95" text-anchor="start">€1,871</text><text class="blabel" x="240" y="129" text-anchor="end">Kettlebell 16 kg</text><path class="bar pos" d="M384.7,114 L588.1,114 Q592.1,114 592.1,118 L592.1,134 Q592.1,138 588.1,138 L384.7,138 Z" data-tip="Kettlebell 16 kg: €1,225 after ads · revenue €3,393 · ads €261 · returns 2.9%"/><text class="bvalue " x="600.1" y="129" text-anchor="start">€1,225</text><text class="blabel" x="240" y="163" text-anchor="end">Trinkflasche Thermo 1L</text><path class="bar pos" d="M384.7,148 L547.4,148 Q551.4,148 551.4,152 L551.4,168 Q551.4,172 547.4,172 L384.7,172 Z" data-tip="Trinkflasche Thermo 1L: €985 after ads · revenue €2,042 · ads €174 · returns 4.7%"/><text class="bvalue " x="559.4" y="163" text-anchor="start">€985</text><text class="blabel" x="240" y="197" text-anchor="end">Trainingshandschuhe Grip+</text><path class="bar pos" d="M384.7,182 L532.0,182 Q536.0,182 536.0,186 L536.0,202 Q536.0,206 532.0,206 L384.7,206 Z" data-tip="Trainingshandschuhe Grip+: €894 after ads · revenue €2,084 · ads €261 · returns 14.2%"/><text class="bvalue " x="544.0" y="197" text-anchor="start">€894</text><text class="blabel" x="240" y="231" text-anchor="end">Springseil Speed Elite</text><path class="bar pos" d="M384.7,216 L530.1,216 Q534.1,216 534.1,220 L534.1,236 Q534.1,240 530.1,240 L384.7,240 Z" data-tip="Springseil Speed Elite: €883 after ads · revenue €1,871 · ads €218 · returns 5.1%"/><text class="bvalue " x="542.1" y="231" text-anchor="start">€883</text><text class="blabel" x="240" y="265" text-anchor="end">Faszienrolle Duo</text><path class="bar pos" d="M384.7,250 L529.1,250 Q533.1,250 533.1,254 L533.1,270 Q533.1,274 529.1,274 L384.7,274 Z" data-tip="Faszienrolle Duo: €877 after ads · revenue €2,033 · ads €218 · returns 8.1%"/><text class="bvalue " x="541.1" y="265" text-anchor="start">€877</text><text class="blabel" x="240" y="299" text-anchor="end">Laufgürtel HydraBelt</text><path class="bar pos" d="M384.7,284 L466.9,284 Q470.9,284 470.9,288 L470.9,304 Q470.9,308 466.9,308 L384.7,308 Z" data-tip="Laufgürtel HydraBelt: €509 after ads · revenue €1,283 · ads €218 · returns 4.2%"/><text class="bvalue " x="478.9" y="299" text-anchor="start">€509</text><text class="blabel" x="240" y="333" text-anchor="end">Fitness-Tracker PP-One</text><path class="bar neg" d="M384.7,318 L254.0,318 Q250.0,318 250.0,322 L250.0,338 Q250.0,342 254.0,342 L384.7,342 Z" data-tip="Fitness-Tracker PP-One: -€795 after ads · revenue €6,586 · ads €1,394 · returns 40.8%"/><text class="bvalue negt" x="392.7" y="333" text-anchor="start">-€795</text>
+  </svg>
+  <div class="tooltip" id="bc-tip" hidden></div>
+  </div>
+</figure>
+
+<div class="card"><figcaption><strong>All products</strong> · last 30 days (table view)</figcaption>
+<table><thead><tr><th>Product</th><th>Units</th><th>Revenue</th><th>Contribution</th>
+<th>Ad spend</th><th>After ads</th><th>Returns</th></tr></thead><tbody><tr><td>Widerstandsbänder-Set Pro</td><td>156</td><td>€5,130</td><td>€3,184</td><td>€436</td><td class="">€2,748</td><td>5.8%</td></tr><tr><td>Hanteln-Set verstellbar 24 kg</td><td>54</td><td>€6,854</td><td>€2,775</td><td>€523</td><td class="">€2,252</td><td>14.8%</td></tr><tr><td>Yogamatte EcoGrip</td><td>117</td><td>€4,150</td><td>€2,263</td><td>€392</td><td class="">€1,871</td><td>11.1%</td></tr><tr><td>Kettlebell 16 kg</td><td>70</td><td>€3,393</td><td>€1,486</td><td>€261</td><td class="">€1,225</td><td>2.9%</td></tr><tr><td>Trinkflasche Thermo 1L</td><td>86</td><td>€2,042</td><td>€1,159</td><td>€174</td><td class="">€985</td><td>4.7%</td></tr><tr><td>Trainingshandschuhe Grip+</td><td>106</td><td>€2,084</td><td>€1,155</td><td>€261</td><td class="">€894</td><td>14.2%</td></tr><tr><td>Springseil Speed Elite</td><td>99</td><td>€1,871</td><td>€1,100</td><td>€218</td><td class="">€883</td><td>5.1%</td></tr><tr><td>Faszienrolle Duo</td><td>74</td><td>€2,033</td><td>€1,095</td><td>€218</td><td class="">€877</td><td>8.1%</td></tr><tr><td>Laufgürtel HydraBelt</td><td>48</td><td>€1,283</td><td>€727</td><td>€218</td><td class="">€509</td><td>4.2%</td></tr><tr><td>Fitness-Tracker PP-One</td><td>125</td><td>€6,586</td><td>€599</td><td>€1,394</td><td class="tneg">-€795</td><td>40.8%</td></tr></tbody></table></div>
+<footer>Reporting Autopilot · sets itself up, updates daily, flags anomalies — without you lifting a finger.</footer>
+<script>
+(function() {
+  // Linien-Tooltip mit Fadenkreuz
+  const wrap = document.getElementById('lc-wrap'), svg = document.getElementById('linechart'),
+        tip = document.getElementById('lc-tip'), ch = document.getElementById('crosshair');
+  if (svg && window.LC_DATA) {
+    svg.addEventListener('mousemove', e => {
+      const r = svg.getBoundingClientRect(), sx = 960 / r.width, mx = (e.clientX - r.left) * sx;
+      let best = 0, bd = 1e9;
+      LC_DATA.forEach((p, i) => { const d = Math.abs(p.x - mx); if (d < bd) { bd = d; best = i; } });
+      const p = LC_DATA[best];
+      ch.setAttribute('x1', p.x); ch.setAttribute('x2', p.x);
+      tip.hidden = false;
+      tip.innerHTML = '<strong>' + p.d + '</strong> · 7-day avg<br>Revenue: €' + p.r.toLocaleString('en-US') + '<br>Contribution: €' + p.c.toLocaleString('en-US');
+      const wr = wrap.getBoundingClientRect();
+      tip.style.left = Math.min(e.clientX - wr.left + 14, wr.width - 190) + 'px';
+      tip.style.top = (e.clientY - wr.top + 14) + 'px';
+    });
+    svg.addEventListener('mouseleave', () => { tip.hidden = true; ch.setAttribute('x1', -10); ch.setAttribute('x2', -10); });
+  }
+  // Balken-Tooltip
+  document.querySelectorAll('.bar').forEach(b => {
+    b.addEventListener('mousemove', e => {
+      const tip2 = document.getElementById('bc-tip'), wr = b.closest('.chartwrap').getBoundingClientRect();
+      tip2.hidden = false; tip2.textContent = b.dataset.tip;
+      tip2.style.left = Math.min(e.clientX - wr.left + 14, wr.width - 320) + 'px';
+      tip2.style.top = (e.clientY - wr.top + 14) + 'px';
+    });
+    b.addEventListener('mouseleave', () => document.getElementById('bc-tip').hidden = true);
+  });
+})();
+</script>
+</body></html>
