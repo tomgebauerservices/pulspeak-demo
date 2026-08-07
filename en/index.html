@@ -10,11 +10,8 @@
   --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
   --up:#006300; --down:#b3261e;
 }
-@media (prefers-color-scheme: dark) { :root {
-  --surface:#1a1a19; --page:#0d0d0d; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
-  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
-  --s1:#2dd4a7; --s2:#3987e5; --neg:#e66767; --up:#0ca30c; --down:#e66767;
-} }
+/* Dunkel-Variante entfernt 2026-08-07 (Toms Ansage): Cockpit immer hell — kein Hell/Dunkel-Mix in der eingebetteten ALPSCREEN-Demo, passt zur hellen Marke. */
+:root { color-scheme: light; }
 * { box-sizing:border-box; margin:0 }
 body { background:var(--page); color:var(--ink); font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
        padding:24px; max-width:1060px; margin:0 auto }
@@ -71,7 +68,7 @@ footer { margin:22px 0 6px; font-size:12px; color:var(--muted); text-align:cente
 </style></head><body>
 <header>
   <h1>PulsPeak — Shop Cockpit</h1>
-  <p>Automatically updated on Aug 07, 2026 at 15:40 · Demo with fictional data · Period: last 30 days vs. previous month</p>
+  <p>Automatically updated on Aug 07, 2026 at 17:27 · Demo with fictional data · Period: last 30 days vs. previous month</p>
 </header>
 <div class="tiles"><div class="tile"><div class="tlabel">Revenue (30 days)</div><div class="tvalue">€34,681 <span class="delta good">▲ 5.8%</span></div><div class="tsub">485 orders · avg €72 per cart</div></div><div class="tile"><div class="tlabel">Contribution margin</div><div class="tvalue">45.2% <span class="delta good">▲ 0.2 pp</span></div><div class="tsub">€15,672 absolute</div></div><div class="tile"><div class="tlabel">ROAS</div><div class="tvalue">8.4 <span class="delta good">▲ 0.4</span></div><div class="tsub">above break-even (2.2) · ad spend €4,127</div></div><div class="tile"><div class="tlabel">Return rate</div><div class="tvalue">10.5% <span class="delta bad">▲ 4.5 pp</span></div><div class="tsub">Conversion 2.4% · CAC €14</div></div></div>
 <div class="card profit"><figcaption><strong>Profit (after owner's pay)</strong> · last 30 days — what's really left at the end</figcaption><div class="pvalue pos">€4,145</div><table class="pnl"><tr><td>Contribution (after goods, shipping, fees)</td><td>€15,672</td></tr><tr><td>− Ad spend</td><td>−€4,127</td></tr><tr><td>− Fixed costs (rent, software, wages)</td><td>−€3,900</td></tr><tr><td>− Owner's pay (imputed)</td><td>−€3,500</td></tr></table><p class="tsub">Fixed costs &amp; imputed owner's pay are provided by the store — realistically estimated for this demo. A management metric, <strong>not your taxable profit</strong>: for a sole proprietor the imputed owner's pay is not a deductible expense — for tax, the figure before owner's pay applies.</p></div>
